@@ -3,7 +3,7 @@ import { Button, Form } from 'react-bootstrap';
 function RegistrationForm() {
   return (
     <Form>
-     <Form.Group className="mb-3" controlId="formBasicPassword">
+     <Form.Group className="mb-3" controlId="formBasicUsername">
         <Form.Label>Имя пользователя</Form.Label>
         <Form.Control type="text" placeholder="Введите имя" />
       </Form.Group>
