@@ -1,101 +1,130 @@
-import React from "react";
-import Table from 'react-bootstrap/Table';
+// src/components/UserList.js
+import React, { useEffect, useState } from 'react';
+import { signOut } from 'firebase/auth';
+import { ref, onValue } from 'firebase/database';
+import { useNavigate } from 'react-router-dom';
+import { getUsers, blockUsers, unblockUsers, deleteUsers, auth, db } from '../../services/firebase';
 
-const users = [
-    {
-      id: 1,
-      username: 'john_doe',
-      email: 'john@example.com',
-      registration_date: '2023-01-15T10:45:00Z',
-      last_login: '2023-09-01T08:30:00Z',
-      status: 'active',
-    },
-    {
-      id: 2,
-      username: 'jane_smith',
-      email: 'jane@example.com',
-      registration_date: '2023-02-20T12:00:00Z',
-      last_login: '2023-09-05T09:15:00Z',
-      status: 'blocked',
-    },
-    {
-      id: 3,
-      username: 'mike_ross',
-      email: 'mike@example.com',
-      registration_date: '2023-03-10T14:20:00Z',
-      last_login: '2023-09-03T16:45:00Z',
-      status: 'active',
-    },
-    {
-      id: 4,
-      username: 'linda_jones',
-      email: 'linda@example.com',
-      registration_date: '2023-04-05T08:30:00Z',
-      last_login: '2023-09-02T11:00:00Z',
-      status: 'active',
-    },
-    {
-      id: 5,
-      username: 'steve_harper',
-      email: 'steve@example.com',
-      registration_date: '2023-05-25T17:00:00Z',
-      last_login: '2023-08-30T15:00:00Z',
-      status: 'blocked',
-    },
-    {
-      id: 6,
-      username: 'anna_martin',
-      email: 'anna@example.com',
-      registration_date: '2023-06-15T19:30:00Z',
-      last_login: '2023-09-06T13:30:00Z',
-      status: 'active',
-    },
-    {
-      id: 7,
-      username: 'bob_turner',
-      email: 'bob@example.com',
-      registration_date: '2023-07-01T10:00:00Z',
-      last_login: '2023-09-04T10:45:00Z',
-      status: 'blocked',
-    },
-    {
-      id: 8,
-      username: 'carol_adams',
-      email: 'carol@example.com',
-      registration_date: '2023-08-10T15:45:00Z',
-      last_login: '2023-09-07T09:00:00Z',
-      status: 'active',
-    },
-  ];
+function Main() {
+  const [users, setUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const navigate = useNavigate();
+  const currentUser = auth.currentUser;
 
-const Main = () => {
+  useEffect(() => {
+    async function fetchUsers() {
+      const usersList = await getUsers();
+      setUsers(usersList);
+    }
+    fetchUsers();
+  }, []);
+
+const handleSelectUser = (userId) => {
+    setSelectedUsers((prevSelected) =>
+      prevSelected.includes(userId)
+        ? prevSelected.filter((id) => id !== userId)
+        : [...prevSelected, userId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.length === users.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(users.map((user) => user.id));
+    }
+  };
+
+  const handleBlock = async () => {
+    await blockUsers(selectedUsers);
+    setUsers(users.map((user) =>
+      selectedUsers.includes(user.id) ? { ...user, status: 'blocked' } : user
+    ));
+    setSelectedUsers([]);
+  };
+
+  const handleUnblock = async () => {
+    await unblockUsers(selectedUsers);
+    setUsers(users.map((user) =>
+      selectedUsers.includes(user.id) ? { ...user, status: 'active' } : user
+    ));
+    setSelectedUsers([]);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedUsers.includes(currentUser.uid)) {
+
+      await deleteUsers(selectedUsers);
+      setUsers(users.filter((user) => !selectedUsers.includes(user.id)));
+      setSelectedUsers([]);
+
+      await signOut(auth);
+      
+      navigate('/register');
+    } else {
+      await deleteUsers(selectedUsers);
+      setUsers(users.filter((user) => !selectedUsers.includes(user.id)));
+      setSelectedUsers([]);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      const userRef = ref(db, `users/${currentUser.uid}`);
+      
+      // Следим за изменениями статуса текущего пользователя
+      const unsubscribe = onValue(userRef, (snapshot) => {
+        const userData = snapshot.val();
+        
+        if (userData === null) {
+          // Пользователь удален
+          signOut(auth);
+          navigate('/login');
+        } else if (userData.status === 'blocked') {
+          // Пользователь заблокирован
+          signOut(auth);
+          navigate('/login');
+        }
+      });
+
+      return () => unsubscribe();
+    }
+  }, [currentUser, navigate]);
+
     return (
         <div className="container mt-5">
-            {/* Toolbar */}
             <div className="d-flex mb-3">
                 <button
                     className="btn btn-warning me-2"
+                    onClick={handleBlock}
+                    disabled={!selectedUsers.length}
                 >
-                    Block
+                  Block
                 </button>
                 <button
                     className="btn btn-success me-2"
+                    onClick={handleUnblock}
+                    disabled={!selectedUsers.length}
                 >
-                    Unblock
+                  Unblock
                 </button>
                 <button
                     className="btn btn-danger"
+                    onClick={handleDeleteSelected}
+                    disabled={!selectedUsers.length}
                 >
-                    <i className="bi bi-trash"></i> Delete
+                  <i className="bi bi-trash"></i> Delete
                 </button>
             </div>
 
-            <Table striped bordered hover>
+            <table className="table table-striped table-hover">
                 <thead>
                     <tr>
                         <th>
                             <input
                                 type="checkbox"
+                                onChange={handleSelectAll}
+                                checked={selectedUsers.length === users.length}
                             />
                         </th>
                         <th>ID</th>
@@ -112,6 +141,8 @@ const Main = () => {
                             <td>
                                 <input
                                     type="checkbox"
+                                    checked={selectedUsers.includes(user.id)}
+                                    onChange={() => handleSelectUser(user.id)}
                                 />
                             </td>
                             <td>{user.id}</td>
@@ -123,9 +154,9 @@ const Main = () => {
                         </tr>
                     ))}
                 </tbody>
-            </Table>
+            </table>
         </div>
-    );
+);
 }
 
 export default Main;
