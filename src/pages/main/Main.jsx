@@ -1,4 +1,3 @@
-// src/components/UserList.js
 import React, { useEffect, useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { ref, onValue } from 'firebase/database';
@@ -6,10 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { getUsers, blockUsers, unblockUsers, deleteUsers, auth, db } from '../../services/firebase';
 import unblockImg from '../../assets/icons/icons8-padlock.svg';
 import deleteImg from '../../assets/icons/trash3.svg';
+import UsersTable from '../../components/users-table/users-table';
 
 function Main() {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [currentUserData, setCurrentUserData] = useState(null);
   const navigate = useNavigate();
   const currentUser = auth.currentUser;
 
@@ -21,7 +22,7 @@ function Main() {
     fetchUsers();
   }, []);
 
-const handleSelectUser = (userId) => {
+  const handleSelectUser = (userId) => {
     setSelectedUsers((prevSelected) =>
       prevSelected.includes(userId)
         ? prevSelected.filter((id) => id !== userId)
@@ -77,15 +78,17 @@ const handleSelectUser = (userId) => {
   useEffect(() => {
     if (currentUser) {
       const userRef = ref(db, `users/${currentUser.uid}`);
-      
+
       const unsubscribe = onValue(userRef, (snapshot) => {
         const userData = snapshot.val();
-        
+
         if (userData === null || userData.status === 'blocked') {
           logOut();
+        } else {
+          setCurrentUserData(userData);
         }
       });
-  
+
       return () => unsubscribe();
     }
   }, [currentUser]);
@@ -93,9 +96,9 @@ const handleSelectUser = (userId) => {
     return (
       <>
         <div className="container d-flex justify-content-end mt-5">
-          <p className="fs-5 m-0 p-3">Hello, {currentUser.email} !</p>
+          <p className="fs-5 m-0 p-3">Hello, {currentUserData?.username} !</p>
           <button
-              className="btn btn-link btn-m"
+              className="btn btn-sm btn-outline-secondary"
               onClick={logOut}
             >
               Logout
@@ -129,43 +132,12 @@ const handleSelectUser = (userId) => {
                 alt="delete" />
             </button>
           </div>
-
-          <table className="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>
-                  <input
-                    type="checkbox"
-                    onChange={handleSelectAll}
-                    checked={selectedUsers.length === users.length} />
-                </th>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Registration Date</th>
-                <th>Last Login</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user) => (
-                <tr key={user.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selectedUsers.includes(user.id)}
-                      onChange={() => handleSelectUser(user.id)} />
-                  </td>
-                  <td>{user.id}</td>
-                  <td>{user.username}</td>
-                  <td>{user.email}</td>
-                  <td>{new Date(user.registration_date).toLocaleString()}</td>
-                  <td>{new Date(user.last_login).toLocaleString()}</td>
-                  <td>{user.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <UsersTable 
+            users={users} 
+            handleSelectAll={handleSelectAll} 
+            selectedUsers={selectedUsers} 
+            handleSelectUser={handleSelectUser}
+          />
         </div>
       </>
     );
