@@ -2,9 +2,9 @@ import React from "react"
 
 const UsersTable = ({users, handleSelectAll, selectedUsers, handleSelectUser}) => {
     return (
-        <table className="table table-striped table-hover">
+        <table className="table table-bordered table-hover">
             <thead>
-              <tr>
+              <tr className="table-primary">
                 <th>
                   <input
                     type="checkbox"
@@ -19,9 +19,9 @@ const UsersTable = ({users, handleSelectAll, selectedUsers, handleSelectUser}) =
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="table-group-divider">
               {users.map((user) => (
-                <tr key={user.id}>
+                <tr key={user.id} className={user.status === 'blocked' ? "table-warning" : ""}>
                   <td>
                     <input
                       type="checkbox"

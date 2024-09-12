@@ -22,7 +22,7 @@ const SignUp = () => {
     };
 
     return (
-        <div className="container p-5 my-5 border">
+        <div className="container p-5 my-5 border w-50">
             <h2 className="text-primary mb-4">Sign Up</h2>
             <Form>
             <Form.Group className="mb-3" controlId="formBasicUsername">

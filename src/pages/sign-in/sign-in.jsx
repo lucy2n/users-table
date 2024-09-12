@@ -27,7 +27,7 @@ const SignIn = () => {
     };
 
     return (
-        <div className="container p-5 my-5 border">
+        <div className="container p-5 my-5 border w-50">
             <h2 className="text-primary mb-4">Sign In</h2>
             <Form>
             <Form.Group className="mb-3" controlId="formBasicEmail">
@@ -38,7 +38,7 @@ const SignIn = () => {
             <Form.Group className="mb-3" controlId="formBasicPassword">
                 <Form.Label>Password</Form.Label>
                 <Form.Control type="password" placeholder="Enter your password" onChange={(e) => setPassword(e.target.value)}/>
-                <Form.Text>{error}</Form.Text>
+                <Form.Text className="text-danger">{error}</Form.Text>
             </Form.Group>
 
             <Button variant="primary" type="submit" onClick={handleSubmit} disabled={loading}>

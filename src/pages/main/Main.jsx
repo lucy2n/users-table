@@ -3,11 +3,12 @@ import { signOut } from 'firebase/auth';
 import { ref, onValue } from 'firebase/database';
 import { useNavigate } from 'react-router-dom';
 import { getUsers, blockUsers, unblockUsers, deleteUsers, auth, db } from '../../services/firebase';
-import unblockImg from '../../assets/icons/icons8-padlock.svg';
+import lockImg from '../../assets/icons/icons8-lock.svg';
+import unlockImg from '../../assets/icons/icons8-padlock.svg';
 import deleteImg from '../../assets/icons/trash3.svg';
 import UsersTable from '../../components/users-table/users-table';
 
-function Main() {
+const Main = () => {
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [currentUserData, setCurrentUserData] = useState(null);
@@ -94,7 +95,7 @@ function Main() {
   }, [currentUser]);
 
     return (
-      <>
+      <div className="d-flex flex-column vh-100 w-auto">
         <div className="container d-flex justify-content-end mt-5">
           <p className="fs-5 m-0 p-3">Hello, {currentUserData?.username} !</p>
           <button
@@ -111,23 +112,29 @@ function Main() {
               onClick={handleBlock}
               disabled={!selectedUsers.length}
             >
+              <img
+                style={{ width: "18px", height: "26px" }}
+                src={lockImg}
+                alt="lock" />
               Block
             </button>
             <button
-              className="btn btn-success me-2"
+              className="btn btn-outline-success me-2"
               onClick={handleUnblock}
               disabled={!selectedUsers.length}
             >
               <img
-                src={unblockImg}
-                alt="unblock" />
+                style={{ width: "18px", height: "26px" }}
+                src={unlockImg}
+                alt="unlock" />
             </button>
             <button
-              className="btn btn-danger me-2"
+              className="btn btn-outline-danger me-2"
               onClick={handleDeleteSelected}
               disabled={!selectedUsers.length}
             >
               <img
+                style={{ width: "18px", height: "26px" }}
                 src={deleteImg}
                 alt="delete" />
             </button>
@@ -139,7 +146,7 @@ function Main() {
             handleSelectUser={handleSelectUser}
           />
         </div>
-      </>
+      </div>
     );
 }
 
