@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Form } from 'react-bootstrap';
 import { registerUser } from '../../services/auth-servise';
+import { handlRegisterErrors } from '../../utils/utils';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
 
@@ -17,7 +19,7 @@ const SignUp = () => {
             alert('User registered successfully');
             navigate('/login');
         } catch (error) {
-            console.error('Error with authentication:', error.message);
+            setError(handlRegisterErrors(error));
         }
     };
 
@@ -33,6 +35,7 @@ const SignUp = () => {
             <Form.Group className="mb-3" controlId="formBasicEmail">
                 <Form.Label>Email</Form.Label>
                 <Form.Control type="email" placeholder="Enter your email" onChange={(e) => setEmail(e.target.value)}/>
+                <Form.Text className="text-danger">{error}</Form.Text>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">

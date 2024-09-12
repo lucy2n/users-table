@@ -9,3 +9,13 @@ export const handleAuthErrors = (error) => {
         return 'Failed to sign in. Please try again later.';
     }
 };
+
+export const handlRegisterErrors = (error) => {
+    if (error.code === 'auth/email-already-in-use') {
+        return 'There is already a user with this email address';
+    } else if (error.code === 'auth/wrong-password') {
+        return 'Incorrect password.';
+    } else {
+        return 'Failed to sign up. Please try again later.';
+    }
+};
