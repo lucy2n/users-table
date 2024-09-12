@@ -2,50 +2,22 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase, ref, set, get, update, remove } from "firebase/database";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyASLmv8Qhuk0pj6AGeTGiL2LCQ-iEZ7Iso",
-  authDomain: "users-table-bfa3f.firebaseapp.com",
-  databaseURL: "https://users-table-bfa3f-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "users-table-bfa3f",
-  storageBucket: "users-table-bfa3f.appspot.com",
-  messagingSenderId: "801722176151",
-  appId: "1:801722176151:web:e116b45786b5fdd2664fd2",
-  measurementId: "G-C8SMWB7QJZ"
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getDatabase(app);
-
-export const registerUser = async (email, password, username) => {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  await set(ref(db, 'users/' + user.uid), {
-    username,
-    email: user.email,
-    registration_date: new Date().toISOString(),
-    last_login: new Date().toISOString(),
-    status: 'active',
-  });
-
-  return user;
-};
-
-export const loginUser = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-
-  await update(ref(db, 'users/' + user.uid), {
-    last_login: new Date().toISOString(),
-    status: 'active',
-  });
-
-  return user;
-};
 
 
 export async function getUsers() {

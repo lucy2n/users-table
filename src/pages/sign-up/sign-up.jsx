@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Form } from 'react-bootstrap';
-import { auth, db, registerUser } from '../../services/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { ref, set } from 'firebase/database';
+import { registerUser } from '../../services/authServise';
 
 const SignUp = () => {
     const [email, setEmail] = useState('');
@@ -11,7 +9,7 @@ const SignUp = () => {
     const [username, setUsername] = useState('');
     const navigate = useNavigate();
 
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -25,31 +23,31 @@ const SignUp = () => {
 
     return (
         <div className="container p-5 my-5 border">
-            <h2 className="text-primary">Регистрация</h2>
+            <h2 className="text-primary mb-4">Sign Up</h2>
             <Form>
             <Form.Group className="mb-3" controlId="formBasicUsername">
-                <Form.Label>Имя пользователя</Form.Label>
-                <Form.Control type="text" placeholder="Введите имя" onChange={(e) => setUsername(e.target.value)}/>
+                <Form.Label>Username</Form.Label>
+                <Form.Control type="text" placeholder="Enter your name" onChange={(e) => setUsername(e.target.value)}/>
             </Form.Group>
                 
             <Form.Group className="mb-3" controlId="formBasicEmail">
                 <Form.Label>Email</Form.Label>
-                <Form.Control type="email" placeholder="Введите адрес вашей почты" onChange={(e) => setEmail(e.target.value)}/>
+                <Form.Control type="email" placeholder="Enter your email" onChange={(e) => setEmail(e.target.value)}/>
             </Form.Group>
 
             <Form.Group className="mb-3" controlId="formBasicPassword">
-                <Form.Label>Пароль</Form.Label>
-                <Form.Control type="password" placeholder="Введите пароль" onChange={(e) => setPassword(e.target.value)}/>
+                <Form.Label>Password</Form.Label>
+                <Form.Control type="password" placeholder="Enter your password" onChange={(e) => setPassword(e.target.value)}/>
             </Form.Group>
 
             <Button variant="primary" type="submit" onClick={handleSubmit}>
-                Сохранить
+                Submit
             </Button>
             </Form>
             <div className='d-flex flex-column justify-content-center align-items-center'>
-                <p>Уже есть аккаунт?</p>
+                <p>Already have an account?</p>
                 <Button className="btn-link" type="button" onClick={() => navigate('/login')}>
-                    Войти
+                    Sing In
                 </Button>
             </div>
         </div>
