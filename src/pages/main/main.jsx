@@ -97,13 +97,13 @@ const Main = () => {
     return (
       <div className="d-flex flex-column vh-100 w-auto">
         <div className="container d-flex justify-content-end mt-5">
-          <p className="fs-5 m-0 p-3">Hello, {currentUserData?.username} !</p>
+          <p className="fs-5 m-0 p-3">Hello, {currentUserData?.username}!</p>
           <button
-              className="btn btn-sm btn-outline-secondary"
-              onClick={logOut}
-            >
-              Logout
-            </button>
+            className="btn btn-sm btn-outline-secondary"
+            onClick={logOut}
+          > 
+            Logout
+          </button>
         </div>
         <div className="container mt-5">
           <div className="d-flex mb-3 w-10 h-10">
@@ -115,7 +115,8 @@ const Main = () => {
               <img
                 style={{ width: "18px", height: "26px" }}
                 src={lockImg}
-                alt="lock" />
+                alt="lock" 
+              />
               Block
             </button>
             <button
@@ -126,7 +127,9 @@ const Main = () => {
               <img
                 style={{ width: "18px", height: "26px" }}
                 src={unlockImg}
-                alt="unlock" />
+                alt="unlock" 
+              />
+                Unblock
             </button>
             <button
               className="btn btn-outline-danger me-2"
@@ -136,7 +139,9 @@ const Main = () => {
               <img
                 style={{ width: "18px", height: "26px" }}
                 src={deleteImg}
-                alt="delete" />
+                alt="delete" 
+              />
+                Delete
             </button>
           </div>
           <UsersTable 
