@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase, ref, set, get, update, remove } from "firebase/database";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyASLmv8Qhuk0pj6AGeTGiL2LCQ-iEZ7Iso",
@@ -19,7 +20,34 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 
-// Функция для получения всех пользователей
+export const registerUser = async (email, password, username) => {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+
+  await set(ref(db, 'users/' + user.uid), {
+    username,
+    email: user.email,
+    registration_date: new Date().toISOString(),
+    last_login: new Date().toISOString(),
+    status: 'active',
+  });
+
+  return user;
+};
+
+export const loginUser = async (email, password) => {
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
+
+  await update(ref(db, 'users/' + user.uid), {
+    last_login: new Date().toISOString(),
+    status: 'active',
+  });
+
+  return user;
+};
+
+
 export async function getUsers() {
   const usersRef = ref(db, 'users/');
   const snapshot = await get(usersRef);
@@ -33,7 +61,6 @@ export async function getUsers() {
   }
 }
 
-// Функция для сохранения пользователя в Realtime Database
 export const saveUserToDatabase = async (user) => {
   try {
     const userRef = ref(db, 'users/' + user.uid);
@@ -49,7 +76,7 @@ export const saveUserToDatabase = async (user) => {
   }
 };
 
-// Функция для удаления нескольких пользователей
+
 export const deleteUsers = async (userIds) => {
   try {
     const deletePromises = userIds.map(async (userId) => {
