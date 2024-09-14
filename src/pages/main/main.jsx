@@ -16,7 +16,6 @@ const Main = () => {
   const currentUser = auth.currentUser;
 
   useEffect(() => {
-    // Fetch users from Firestore
     async function fetchUsers() {
       const usersList = await getUsers();
       setUsers(usersList);
@@ -47,7 +46,6 @@ const Main = () => {
 
   const handleBlock = async () => {
     await blockUsers(selectedUsers);
-    logOut();
     setUsers(users.map((user) =>
       selectedUsers.includes(user.id) ? { ...user, status: 'blocked' } : user
     ));
@@ -99,7 +97,7 @@ const Main = () => {
 
       fetchCurrentUserData();
     }
-  }, [currentUser]);
+  }, [currentUser, logOut]);
 
   return (
     <div className="d-flex flex-column vh-100 w-auto">
