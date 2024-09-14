@@ -40,8 +40,14 @@ const Main = () => {
     }
   };
 
+  const logOut = async () => {
+    await signOut(auth);
+    navigate('/login');
+  };
+
   const handleBlock = async () => {
     await blockUsers(selectedUsers);
+    logOut();
     setUsers(users.map((user) =>
       selectedUsers.includes(user.id) ? { ...user, status: 'blocked' } : user
     ));
@@ -56,10 +62,6 @@ const Main = () => {
     setSelectedUsers([]);
   };
 
-  const logOut = async () => {
-    await signOut(auth);
-    navigate('/login');
-  };
 
   const handleDeleteSelected = async () => {
     const isCurrentUserDeleted = selectedUsers.includes(currentUser.uid);
