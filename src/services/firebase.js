@@ -1,12 +1,10 @@
-// src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getDatabase, ref, set, get, update, remove } from "firebase/database";
+import { getFirestore, doc, collection, getDocs, getDoc, writeBatch } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
   projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
   storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
@@ -17,74 +15,62 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getDatabase(app);
-
+export const db = getFirestore(app);
 
 export async function getUsers() {
-  const usersRef = ref(db, 'users/');
-  const snapshot = await get(usersRef);
-  if (snapshot.exists()) {
-    return Object.entries(snapshot.val()).map(([id, userData]) => ({
-      id,
-      ...userData,
+  try {
+    const usersCollectionRef = collection(db, 'User');
+    const usersSnapshot = await getDocs(usersCollectionRef);
+    return usersSnapshot.docs.map((doc) => ({
+      ...doc.data(),
     }));
-  } else {
+  } catch (error) {
+    console.error('Error fetching users:', error.message);
     return [];
   }
 }
 
-export const saveUserToDatabase = async (user) => {
-  try {
-    const userRef = ref(db, 'users/' + user.uid);
-    await set(userRef, {
-      email: user.email,
-      username: user.username,
-      registration_date: new Date().toISOString(),
-      last_login: new Date().toISOString(),
-      status: 'active',
-    });
-  } catch (error) {
-    console.error('Error adding user to Realtime Database:', error.message);
-  }
-};
-
-
-export const deleteUsers = async (userIds) => {
-  try {
-    const deletePromises = userIds.map(async (userId) => {
-      const userRef = ref(db, 'users/' + userId);
-      return await remove(userRef);
-    });
-    
-    await Promise.all(deletePromises);
-  } catch (error) {
-    console.error('Error deleting users:', error.message);
-  }
-};
-
 export const blockUsers = async (userIds) => {
   try {
-    const blockPromises = userIds.map(async (userId) => {
-      const userRef = ref(db, 'users/' + userId);
-      return await update(userRef, { status: 'blocked' });
+    const batch = writeBatch(db);
+
+    userIds.forEach((userId) => {
+      const userDocRef = doc(db, 'User', userId);
+      batch.update(userDocRef, { status: 'blocked' });
     });
-    
-    await Promise.all(blockPromises);
+
+    await batch.commit();
   } catch (error) {
     console.error('Error blocking users:', error.message);
   }
 };
 
-
 export const unblockUsers = async (userIds) => {
   try {
-    const unblockPromises = userIds.map(async (userId) => {
-      const userRef = ref(db, 'users/' + userId);
-      return await update(userRef, { status: 'active' });
+    const batch = writeBatch(db);
+
+    userIds.forEach((userId) => {
+      const userDocRef = doc(db, 'User', userId);
+      batch.update(userDocRef, { status: 'active' });
     });
-    
-    await Promise.all(unblockPromises);
+
+    await batch.commit();
   } catch (error) {
     console.error('Error unblocking users:', error.message);
   }
+};
+
+export const deleteUser = async (id) => {
+  const batch = writeBatch(db);
+
+  const userDocRef = doc(db, 'User', id);
+  const userSnapshot = await getDoc(userDocRef);
+  const prevData = userSnapshot.data();
+
+  batch.delete(userDocRef);
+
+  const emailIndexRef = doc(db, 'Index', `User/email/${prevData.email}`);
+  batch.delete(emailIndexRef);
+
+  await batch.commit();
 };

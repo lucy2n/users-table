@@ -1,61 +1,56 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { ref, set, update, get, runTransaction } from "firebase/database";
 import { auth, db } from './firebase';
+import { doc, updateDoc, getDoc, writeBatch } from 'firebase/firestore';
+
 
 export const registerUser = async (email, password, username) => {
-  const emailKey = email.replace('.', ',');
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-  const emailRef = ref(db, `emails/${emailKey}`);
+  const user = userCredential.user;
 
-  return runTransaction(emailRef, (currentValue) => {
-      if (currentValue === null) {
-          return true;
-      } else {
-          return;
-      }
-  }).then(async (transactionResult) => {
-      if (transactionResult.committed) {
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
+  const batch = writeBatch(db);
 
-          await set(ref(db, 'users/' + user.uid), {
-              id: user.uid,
-              username,
-              email: user.email,
-              registration_date: new Date().toISOString(),
-              last_login: new Date().toISOString(),
-              status: 'active',
-          });
+  const userDocRef = doc(db, 'User', user.uid);
 
-          return user;
-      } else {
-          throw new Error('Email is already in use.');
-      }
-  }).catch((error) => {
-      throw error;
+  batch.set(userDocRef, {
+    id: user.uid,
+    username,
+    email: user.email,
+    registration_date: new Date().toISOString(),
+    last_login: new Date().toISOString(),
+    status: 'active',
   });
+
+  const emailIndexRef = doc(db, 'Index', `User/email/${email}`);
+  batch.set(emailIndexRef, {
+    value: user.uid,
+  });
+
+  await batch.commit();
+
+  return user;
 };
 
 export const loginUser = async (email, password) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  const user = userCredential.user;
 
-    const userRef = ref(db, 'users/' + user.uid);
-    const snapshot = await get(userRef);
+  const userDocRef = doc(db, 'User', user.uid);
+  const userSnapshot = await getDoc(userDocRef);
 
-    if (snapshot.exists()) {
-        const userData = snapshot.val();
+  if (userSnapshot.exists()) {
+    const userData = userSnapshot.data();
 
-        if (userData.status === 'blocked') {
-          throw new Error('User is blocked and cannot sign in.');
-        }
-
-        await update(userRef, {
-          last_login: new Date().toISOString(),
-        });
-
-        return user;
-    } else {
-        throw new Error('User data not found in the database.');
+    if (userData.status === 'blocked') {
+      throw new Error('User is blocked and cannot sign in.');
     }
+
+    await updateDoc(userDocRef, {
+      last_login: new Date().toISOString(),
+    });
+
+    return user;
+  } else {
+    throw new Error('User data not found in the database.');
+  }
 };

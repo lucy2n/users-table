@@ -55,9 +55,9 @@ const SignUp = () => {
           />
         </Form.Group>
 
-        <button id="register-button" type="submit">
+        <Button className="btn-primary" type="submit">
           Submit
-        </button>
+        </Button>
       </Form>
 
       <div className="d-flex flex-column justify-content-center align-items-center">
