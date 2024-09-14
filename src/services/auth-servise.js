@@ -35,7 +35,11 @@ export const loginUser = async (email, password) => {
   const userCredential = await signInWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
 
-  const userDocRef = doc(db, 'User', user.uid);
+  const userIndexRef = doc(db, 'Index/User/email', user.email);
+  const userIndexSnapshot = await getDoc(userIndexRef);
+  const userUid = userIndexSnapshot.data().value;
+
+  const userDocRef = doc(db, 'User', userUid);
   const userSnapshot = await getDoc(userDocRef);
 
   if (userSnapshot.exists()) {

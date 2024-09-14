@@ -13,7 +13,7 @@ const Main = () => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [currentUserData, setCurrentUserData] = useState(null);
   const navigate = useNavigate();
-  const currentUser = auth.currentUser;
+  let currentUser = auth.currentUser;
 
   useEffect(() => {
     async function fetchUsers() {
@@ -78,9 +78,14 @@ const Main = () => {
 
   useEffect(() => {
     if (currentUser) {
-      const userDocRef = doc(db, 'User', currentUser.uid);
+
+      const userIndexRef = doc(db, 'Index/User/email', currentUser.email);
 
       async function fetchCurrentUserData() {
+        const userIndexSnapshot = await getDoc(userIndexRef);
+        const userUid = userIndexSnapshot.data().value;
+        const userDocRef = doc(db, 'User', userUid);
+
         const userSnapshot = await getDoc(userDocRef);
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
